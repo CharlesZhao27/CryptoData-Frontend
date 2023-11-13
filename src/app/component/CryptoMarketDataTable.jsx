@@ -20,8 +20,22 @@ async function getMarketData() {
   return res.json();
 }
 
-//format bigDecimal to 2 decimal number
+//format bigDecimal to 2 decimal number or 6 decimal number
 function formatNumber(num) {
+  if (num === null || num === undefined) {
+    return "N/A";
+  }
+  let options;
+  if (num > 0 && num < 1) {
+    options = { maximumFractionDigits: 6, minimumFractionDigits: 6 };
+  } else {
+    options = { maximumFractionDigits: 2, minimumFractionDigits: 2 };
+  }
+  return new Intl.NumberFormat("en-US", options).format(num);
+}
+
+//format bigDecimal to 2 decimal number
+function formatNumberToTwoDecimalPlace(num) {
   if (num) {
     return new Intl.NumberFormat("en-US", {
       maximumFractionDigits: 2,
@@ -30,6 +44,10 @@ function formatNumber(num) {
   } else {
     return "N/A";
   }
+}
+
+function getColorForValue(value) {
+  return value > 0 ? { color: "green" } : { color: "red" };
 }
 
 async function CryptoMarketDataTable() {
@@ -71,7 +89,7 @@ async function CryptoMarketDataTable() {
               volume
             </TableCell>
             <TableCell style={headerStyle} align="right">
-              marketCap
+              Mkt Cap
             </TableCell>
           </TableRow>
         </TableHead>
@@ -79,11 +97,13 @@ async function CryptoMarketDataTable() {
           {res.map((row, index) => (
             <TableRow key={row.name}>
               <TableCell style={tableCellStyle}>
-                <Typography variant="Button" display="block">
+                <Typography variant="Button" display="block" gutterBottom>
                   {index + 1}
                 </Typography>
               </TableCell>
-
+              
+              {/* Link component to dynamic routed page */}
+              
               <TableCell
                 component="th"
                 scope="row"
@@ -102,22 +122,52 @@ async function CryptoMarketDataTable() {
               </TableCell>
 
               <TableCell align="right" style={tableCellStyle}>
-                ${formatNumber(row.price)}
+                <Typography variant="body2">${formatNumber(row.price)}</Typography>
+              </TableCell>
+              <TableCell
+                align="right"
+                style={{
+                  ...tableCellStyle,
+                  ...getColorForValue(row.priceDifferenceInTwentyFourHours),
+                }}
+              >
+                <Typography variant="body2">
+                  {formatNumberToTwoDecimalPlace(
+                    row.priceDifferenceInTwentyFourHours
+                  )}%
+                </Typography>
+              </TableCell>
+              <TableCell
+                align="right"
+                style={{
+                  ...tableCellStyle,
+                  ...getColorForValue(row.priceDifferenceInSevenDays),
+                }}
+              >
+                <Typography variant="body2">
+                  {formatNumberToTwoDecimalPlace(
+                    row.priceDifferenceInSevenDays
+                  )}%
+                </Typography>
+              </TableCell>
+              <TableCell
+                align="right"
+                style={{
+                  ...tableCellStyle,
+                  ...getColorForValue(row.priceDifferenceInOneMonth),
+                }}
+              >
+                <Typography variant="body2">
+                  {formatNumberToTwoDecimalPlace(row.priceDifferenceInOneMonth)}%
+                </Typography>
               </TableCell>
               <TableCell align="right" style={tableCellStyle}>
-                {formatNumber(row.priceDifferenceInTwentyFourHours)}
+                <Typography variant="body2">
+                  ${formatNumber(row.volumeInTwentyFourHours)}
+                </Typography>
               </TableCell>
-              <TableCell align="right">
-                {formatNumber(row.priceDifferenceInSevenDays)}
-              </TableCell>
-              <TableCell align="right" style={tableCellStyle}>
-                {formatNumber(row.priceDifferenceInOneMonth)}
-              </TableCell>
-              <TableCell align="right" style={tableCellStyle}>
-                ${formatNumber(row.volumeInTwentyFourHours)}
-              </TableCell>
-              <TableCell align="right" style={tableCellStyle}>
-                ${formatNumber(row.marketCap)}
+              <TableCell align="right" style={tableCellStyle} >
+                <Typography variant="body2">${formatNumber(row.marketCap)}</Typography>
               </TableCell>
             </TableRow>
           ))}
